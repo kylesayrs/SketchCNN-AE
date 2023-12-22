@@ -1,0 +1,62 @@
+from typing import Optional, List, Tuple
+
+import os
+import PIL
+import tqdm
+import numpy
+from concurrent.futures import ThreadPoolExecutor
+
+
+def get_all_local_labels(data_dir: str) -> List[str]:
+    label_names = []
+    for file_name in os.listdir(data_dir):
+        if file_name[0] == ".": continue
+
+        label_name = file_name.split(".")[0]
+        label_name = label_name.replace("-", " ")
+        label_names.append(label_name)
+
+    return label_names
+
+
+def load_data(root_dir: str, image_shape: Tuple[int, int], class_names: List[str] = None):
+    print("loading data...")
+    class_names = class_names if class_names is not None else sorted(os.listdir(root_dir))
+    num_classes = len(class_names)
+    class_images = [None for _ in range(num_classes)]
+
+    def load_class(class_index, class_name, progress):
+        file_name = f"{class_name}.npy" if "npy" not in class_name else class_name
+        file_path = os.path.join(root_dir, file_name)
+
+        images_raw = numpy.load(file_path)
+        images = []
+        for raw_image in images_raw:
+            raw_image = raw_image.reshape(*image_shape)
+            image = PIL.Image.fromarray(raw_image)
+            images.append(image)
+            del raw_image
+
+        class_images[class_index] = images
+        progress.update(1)
+
+    with tqdm.tqdm(total=num_classes) as progress:
+        with ThreadPoolExecutor(max_workers=None) as executor:
+            futures = [
+                executor.submit(load_class, class_index, class_name, progress)
+                for class_index, class_name in enumerate(class_names)
+                if class_names is None or class_name in class_names
+            ]
+            [future.result() for future in futures]
+
+    all_images = sum(class_images, [])
+
+    print(f"loaded {len(all_images)} images")
+
+    return all_images
+
+
+def to_one_hot(array, num_classes):
+    array = numpy.array(array)
+    one_hot = numpy.squeeze(numpy.eye(num_classes)[array.reshape(-1)])
+    return numpy.array(one_hot, dtype=numpy.float32)
