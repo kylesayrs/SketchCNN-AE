@@ -55,6 +55,7 @@ def train_model(config: TrainingConfig):
     optimizer = create_optimizer(model, config.optimizer, lr=config.lr)
     criterion = torch.nn.MSELoss().to(config.device)
 
+    # train model
     for epoch_index in range(config.num_epochs):
         for batch_index, images in enumerate(train_loader):
             # load data to device

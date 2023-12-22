@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, Union
 from pydantic import BaseModel, Field
 
 
@@ -13,8 +13,10 @@ class TrainingConfig(BaseModel):
     optimizer: str = Field(default="adam")
     momentum: float = Field(default=0.9)
 
-    logging_rate: int = Field(default=1_000)
+    logging_rate: int = Field(default=100_000)
     test_batch_size: int = Field(default=128)
     save_checkpoints: bool = Field(default=True)
     device: str = Field(default="cpu")
     wandb_mode: str = Field(default="online")
+
+    samples_dir: Union[str, None] = Field(default=None)
