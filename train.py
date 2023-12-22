@@ -1,6 +1,12 @@
+import os
+import shutil
 from src.train import TrainingConfig, train_model
 
 
 if __name__ == "__main__":
-    config = TrainingConfig(wandb_mode="disabled", samples_dir="samples")
+    config = TrainingConfig(
+        #latent_size=16,
+        wandb_mode="disabled",
+        save_samples=True
+    )
     train_model(config)

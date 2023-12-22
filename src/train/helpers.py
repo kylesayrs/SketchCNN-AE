@@ -22,16 +22,18 @@ def log_training(
     config: TrainingConfig,
     model: torch.nn.Module,
     test_loader: torch.utils.data.DataLoader,
+    num_batches: int,
     criterion: torch.nn.Module,
     train_loss: float,
     epoch_index: int,
     batch_index: int
 ):
-    test_loss = test_model(config, model, test_loader, criterion)
-    log_metrics(config, epoch_index, batch_index, train_loss, test_loss)
+    if (epoch_index * num_batches + batch_index) % config.logging_rate == 0:
+        test_loss = test_model(config, model, test_loader, criterion)
+        log_metrics(config, epoch_index, batch_index, num_batches, train_loss, test_loss)
 
-    if config.samples_dir is not None:
-        save_sample(config, epoch_index, batch_index, model, test_loader)
+        if config.save_samples:
+            save_sample(config, epoch_index, batch_index, model, test_loader)
 
 
 def save_sample(
@@ -47,13 +49,15 @@ def save_sample(
     with torch.no_grad():
         reconstruction, _latent = model(image)
 
-    figure, axes = plt.subplots(1, 2)
+    _figure, axes = plt.subplots(1, 2)
     axes[0].imshow(image.cpu().numpy().squeeze(0).squeeze(0))
     axes[1].imshow(reconstruction.cpu().numpy().squeeze(0).squeeze(0))
 
-    os.makedirs(config.samples_dir, exist_ok=True)
+    dir_path = os.path.join("samples", f"{wandb.run.id}")
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
     file_name = f"sample_{epoch_index}_{batch_index}.png"
-    save_path = os.path.join(config.samples_dir, file_name)
+    save_path = os.path.join(dir_path, file_name)
     plt.savefig(save_path)
 
 
@@ -61,6 +65,7 @@ def log_metrics(
     config: TrainingConfig,
     epoch_index: int,
     batch_index: int,
+    num_batches: int,
     train_loss: float,
     test_loss: float
 ):  
@@ -73,7 +78,8 @@ def log_metrics(
     })
 
     print(
-        f"[{epoch_index} / {config.num_epochs}] [{batch_index}] "
+        f"[{epoch_index} / {config.num_epochs}] "
+        f"[{batch_index} / {num_batches}] "
         f"train_loss: {train_loss_normed:.5f} "
         f"test_loss: {test_loss_normed:.5f} "
     )

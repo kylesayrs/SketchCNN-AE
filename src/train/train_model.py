@@ -19,7 +19,6 @@ def train_model(config: TrainingConfig):
         mode=config.wandb_mode,
         config=config.dict()
     )
-    print(wandb.config)
 
     # load data
     all_local_labels = get_all_local_labels("images")
@@ -51,7 +50,7 @@ def train_model(config: TrainingConfig):
     print("created datasets")
 
     # create model, optimizer, and loss
-    model = AutoEncoder(config.image_shape).to(config.device)
+    model = AutoEncoder(config.image_shape, config.latent_size).to(config.device)
     optimizer = create_optimizer(model, config.optimizer, lr=config.lr)
     criterion = torch.nn.MSELoss().to(config.device)
 
@@ -78,6 +77,7 @@ def train_model(config: TrainingConfig):
                 config,
                 model,
                 test_loader,
+                len(train_loader),
                 criterion,
                 loss.item(),
                 epoch_index,
