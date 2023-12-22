@@ -10,10 +10,10 @@ class TrainingConfig(BaseModel):
     latent_size: int = Field(default=256)
 
     num_epochs: int = Field(default=2)
-    batch_size: int = Field(default=128)
-    lr: float = Field(default=1e-2)
+    batch_size: int = Field(default=256)
+    lr: float = Field(default=1e-4)
     optimizer: str = Field(default="adam")
-    momentum: float = Field(default=0.9)
+    momentum: float = Field(default=0.95)
 
     logging_rate: int = Field(default=10)
     test_batch_size: int = Field(default=128)

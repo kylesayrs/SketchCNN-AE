@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from src.train.config import TrainingConfig
 from src.model import AutoEncoder
 from src.data import get_all_local_labels, load_data, QuickDrawImageDataset
-from src.train import create_optimizer, log_training
+from src.train import create_optimizer, batch_callback
 
 
 def train_model(config: TrainingConfig):
@@ -19,6 +19,8 @@ def train_model(config: TrainingConfig):
         mode=config.wandb_mode,
         config=config.dict()
     )
+    print(f"Run id: {wandb.run.id}")
+    print(config)
 
     # load data
     all_local_labels = get_all_local_labels("images")
@@ -71,9 +73,8 @@ def train_model(config: TrainingConfig):
             # optimize
             optimizer.step()
 
-
             # log
-            log_training(
+            batch_callback(
                 config,
                 model,
                 test_loader,

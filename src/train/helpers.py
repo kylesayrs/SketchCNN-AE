@@ -18,7 +18,7 @@ def create_optimizer(
     raise ValueError(f"Unknown optimizer {optimizer}")
 
 
-def log_training(
+def batch_callback(
     config: TrainingConfig,
     model: torch.nn.Module,
     test_loader: torch.utils.data.DataLoader,
@@ -35,6 +35,22 @@ def log_training(
         if config.save_samples:
             save_sample(config, epoch_index, batch_index, model, test_loader)
 
+        if config.save_checkpoints:
+            save_checkpoint(model, epoch_index, batch_index)
+
+
+def save_checkpoint(
+    model: torch.nn.Module,
+    epoch_index: int,
+    batch_index: int,
+):
+    dir_path = os.path.join("checkpoints", f"{wandb.run.id}")
+    os.makedirs(dir_path, exist_ok=True)
+    file_name = f"checkpoint_{epoch_index}_{batch_index}.png"
+    save_path = os.path.join(dir_path, file_name)
+
+    torch.save(model.state_dict(), save_path)
+
 
 def save_sample(
     config: TrainingConfig,
@@ -49,16 +65,19 @@ def save_sample(
     with torch.no_grad():
         reconstruction, _latent = model(image)
 
-    _figure, axes = plt.subplots(1, 2)
-    axes[0].imshow(image.cpu().numpy().squeeze(0).squeeze(0))
-    axes[1].imshow(reconstruction.cpu().numpy().squeeze(0).squeeze(0))
+    image = image.cpu().numpy().squeeze(0).squeeze(0)
+    reconstruction = reconstruction.cpu().numpy().squeeze(0).squeeze(0)
+
+    figure, axes = plt.subplots(1, 2)
+    axes[0].imshow(image, vmin=0.0, vmax=1.0)
+    axes[1].imshow(reconstruction, vmin=0.0, vmax=1.0)
 
     dir_path = os.path.join("samples", f"{wandb.run.id}")
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+    os.makedirs(dir_path, exist_ok=True)
     file_name = f"sample_{epoch_index}_{batch_index}.png"
     save_path = os.path.join(dir_path, file_name)
-    plt.savefig(save_path)
+    figure.savefig(save_path)
+    plt.close(figure)
 
 
 def log_metrics(
@@ -80,8 +99,8 @@ def log_metrics(
     print(
         f"[{epoch_index} / {config.num_epochs}] "
         f"[{batch_index} / {num_batches}] "
-        f"train_loss: {train_loss_normed:.5f} "
-        f"test_loss: {test_loss_normed:.5f} "
+        f"train_loss: {train_loss_normed:.7f} "
+        f"test_loss: {test_loss_normed:.7f} "
     )
 
 
