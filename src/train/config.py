@@ -17,3 +17,4 @@ class TrainingConfig(BaseModel):
     test_batch_size: int = Field(default=128)
     save_checkpoints: bool = Field(default=True)
     device: str = Field(default="cpu")
+    wandb_mode: str = Field(default="online")

@@ -16,7 +16,7 @@ def train_model(config: TrainingConfig):
         entity="kylesayrs",
         name=None,
         reinit=True,
-        mode="disabled",
+        mode=config.wandb_mode,
         config=config.dict()
     )
     print(wandb.config)
