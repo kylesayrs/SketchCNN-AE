@@ -67,6 +67,7 @@ class AutoEncoder(torch.nn.Module):
         #"""
         self.decoder = torch.nn.Sequential(
             torch.nn.Linear(latent_size, 1024),
+            torch.nn.ReLU(),
             torch.nn.Unflatten(1, (64, 4, 4)),
             *conv_up(64, 64),
             *conv_up(64, 64),
