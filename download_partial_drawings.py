@@ -1,14 +1,10 @@
 from typing import Optional
 
 import os
-import json
 import tqdm
-import numpy
 import random
-import pickle
 import argparse
 import subprocess
-import cairocffi as cairo
 from concurrent.futures import ThreadPoolExecutor
 
 
