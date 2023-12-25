@@ -4,7 +4,7 @@ Train an autoencoder to encode partially drawn images from Google's [Quickdraw D
 
 ## Usage ##
 ```bash
-python3 download_bitmaps.py strokes
+python3 download_bitmaps.py drawings
 python3 train.py
 ```
 
