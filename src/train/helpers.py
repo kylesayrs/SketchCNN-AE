@@ -46,7 +46,7 @@ def save_checkpoint(
 ):
     dir_path = os.path.join("checkpoints", f"{wandb.run.id}")
     os.makedirs(dir_path, exist_ok=True)
-    file_name = f"checkpoint_{epoch_index}_{batch_index}.png"
+    file_name = f"checkpoint_{epoch_index}_{batch_index}.pth"
     save_path = os.path.join(dir_path, file_name)
 
     torch.save(model.state_dict(), save_path)

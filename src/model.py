@@ -49,7 +49,7 @@ def conv_up_final(in_filters: int, out_filters: int) -> List[torch.nn.Module]:
 
 
 class AutoEncoder(torch.nn.Module):
-    def __init__(self, image_size: int, latent_size: int):
+    def __init__(self, image_size: int = 50, latent_size: int = 256):
         super().__init__()
         self.image_size = image_size
 

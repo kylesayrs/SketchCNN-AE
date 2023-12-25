@@ -2,7 +2,9 @@ from typing import Optional, List, Tuple
 
 import os
 import json
+import tqdm
 import random
+from concurrent.futures import ThreadPoolExecutor
 
 
 def load_drawings_strokes(
@@ -20,7 +22,7 @@ def load_drawings_strokes(
     """
     all_drawings_strokes = []
     index_to_drawing_stroke_indices = []
-    for file_name in os.listdir(strokes_dir):
+    def load_file_drawings(file_name: str, progress: Optional[tqdm.tqdm] = None):
         file_path = os.path.join(strokes_dir, file_name)
         drawings = load_drawings(file_path)
 
@@ -36,6 +38,15 @@ def load_drawings_strokes(
             for stroke_index in range(len(drawings_strokes[drawing_index]))
         ])
         all_drawings_strokes.extend(drawings_strokes)
+
+        if progress is not None:
+            progress.update(1)
+
+    with ThreadPoolExecutor(max_workers=None) as executor:
+        file_names = os.listdir(strokes_dir)
+        progress = tqdm.tqdm(desc="Classes loaded", total=len(file_names))
+        for file_name in file_names:
+            executor.submit(load_file_drawings, file_name, progress)
 
     return all_drawings_strokes, index_to_drawing_stroke_indices
 

@@ -39,6 +39,8 @@ def strokes_to_raster(
     ctx.scale(new_scale, new_scale)
     ctx.translate(total_padding / 2.0, total_padding / 2.0)
 
+    # don't offset to center, not necessary (as of now)
+
     # clear background
     ctx.set_source_rgb(0.0, 0.0, 0.0)
     ctx.paint()
