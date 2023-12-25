@@ -4,8 +4,6 @@ import torch
 import numpy
 import cairo
 
-from competitive_drawing.train.utils.RandomResizePad import RandomResizePad
-
 
 def strokes_to_raster(
     strokes: List[Tuple[float, float, float]],
