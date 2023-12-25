@@ -75,9 +75,8 @@ def load_drawings(file_path: str) -> List[List[float]]:
     with open(file_path, "r") as file:
         for line in file:
             data = json.loads(line)
-            data["recognized"]
-
-            drawings.append(data["drawing"])
+            if data["recognized"]:
+                drawings.append(data["drawing"])
 
     return drawings
 
