@@ -49,9 +49,9 @@ def conv_up_final(in_filters: int, out_filters: int) -> List[torch.nn.Module]:
 
 
 class AutoEncoder(torch.nn.Module):
-    def __init__(self, image_shape: Tuple[int, int], latent_size: int):
+    def __init__(self, image_size: int, latent_size: int):
         super().__init__()
-        self.image_shape = image_shape
+        self.image_size = image_size
 
         # define encoder
         self.encoder = torch.nn.Sequential(
@@ -64,7 +64,6 @@ class AutoEncoder(torch.nn.Module):
         )
 
         # define decoder
-        #"""
         self.decoder = torch.nn.Sequential(
             torch.nn.Linear(latent_size, 1024),
             torch.nn.ReLU(),
@@ -74,21 +73,10 @@ class AutoEncoder(torch.nn.Module):
             *conv_up(64, 32),
             *conv_up(32, 1),
             torch.nn.Flatten(),
-            torch.nn.Linear(2401, image_shape[0] * image_shape[1]),
-            torch.nn.Unflatten(1, (1, *image_shape)),
+            torch.nn.Linear(2401, image_size * image_size),
+            torch.nn.Unflatten(1, (1, image_size, image_size)),
             torch.nn.Sigmoid(),
         )
-        #"""
-        """
-        self.decoder = torch.nn.Sequential(
-            torch.nn.Linear(latent_size, 256),
-            linear_block(latent_size, 256),
-            linear_block(latent_size, 256),
-            torch.nn.Linear(1, image_shape[0] * image_shape[1]),
-            torch.nn.Unflatten(1, (1, *image_shape)),
-            torch.nn.Sigmoid(),
-        )
-        """
 
         # validate model shapes are correct
         self.validate()
@@ -102,5 +90,5 @@ class AutoEncoder(torch.nn.Module):
 
 
     def validate(self):
-        test_input = torch.rand((1, 1, *self.image_shape))
+        test_input = torch.rand((1, 1, self.image_size, self.image_size))
         self.forward(test_input)

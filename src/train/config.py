@@ -3,8 +3,8 @@ from pydantic import BaseModel, Field
 
 
 class TrainingConfig(BaseModel):
-    data_dir: str = Field(default="images")
-    image_shape: Tuple[int, int] = Field(default=(50, 50))
+    data_dir: str = Field(default="drawings")
+    image_size: int = Field(default=50)
     test_size: float = Field(default=0.2)
 
     latent_size: int = Field(default=256)

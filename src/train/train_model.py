@@ -2,11 +2,10 @@ from typing import Dict, Any
 
 import torch
 import wandb
-from sklearn.model_selection import train_test_split
 
 from src.train.config import TrainingConfig
 from src.model import AutoEncoder
-from src.data import get_all_local_labels, load_data, QuickDrawImageDataset
+from src.data import QuickdrawStrokeDataset, load_drawings_strokes, split_drawings_strokes
 from src.train import create_optimizer, batch_callback
 
 
@@ -23,36 +22,29 @@ def train_model(config: TrainingConfig):
     print(config)
 
     # load data
-    all_local_labels = get_all_local_labels("images")
-    all_images = load_data(
-        config.data_dir,
-        config.image_shape,
-        class_names=all_local_labels
+    drawings_strokes, index_lookup = load_drawings_strokes(config.data_dir)
+
+    # split data
+    train_index_lookup, test_index_lookup = split_drawings_strokes(
+        index_lookup, test_size=0.2, shuffle=True
     )
 
-    # create split
-    x_train, x_test = train_test_split(
-        all_images,
-        test_size=config.test_size,
-        shuffle=True,
-    )
-
+    # data loaders
     train_loader = torch.utils.data.DataLoader(
-        QuickDrawImageDataset(x_train, augmentations=True),
+        QuickdrawStrokeDataset(drawings_strokes, train_index_lookup, image_size=config.image_size),
         batch_size=config.batch_size,
         shuffle=True,
         num_workers=0
     )
     test_loader = torch.utils.data.DataLoader(
-        QuickDrawImageDataset(x_test, augmentations=False),
+        QuickdrawStrokeDataset(drawings_strokes, test_index_lookup, image_size=config.image_size),
         batch_size=config.test_batch_size,
         shuffle=True,
         num_workers=0
     )
-    print("created datasets")
 
     # create model, optimizer, and loss
-    model = AutoEncoder(config.image_shape, config.latent_size).to(config.device)
+    model = AutoEncoder(config.image_size, config.latent_size).to(config.device)
     optimizer = create_optimizer(model, config.optimizer, lr=config.lr)
     criterion = torch.nn.MSELoss().to(config.device)
 

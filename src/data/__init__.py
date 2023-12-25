@@ -1,3 +1,3 @@
 from .data import *
-from .QuickDrawDataset import *
+from .QuickdrawStrokeDataset import *
 from .RandomResizePad import *

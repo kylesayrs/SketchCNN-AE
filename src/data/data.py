@@ -1,62 +1,83 @@
 from typing import Optional, List, Tuple
 
 import os
-import PIL
-import tqdm
-import numpy
-from concurrent.futures import ThreadPoolExecutor
+import json
+import random
 
 
-def get_all_local_labels(data_dir: str) -> List[str]:
-    label_names = []
-    for file_name in os.listdir(data_dir):
-        if file_name[0] == ".": continue
+def load_drawings_strokes(
+    strokes_dir: str
+) -> Tuple[
+        List[List[Tuple[float, float, float]]],
+        List[Tuple[int, int]]
+    ]:
+    """
+    drawings_strokes[drawing_index][stroke_index] = (x, y, pen_down)
+    index_to_drawing_stroke_indices[index] = (drawing_index, stroke_index)
 
-        label_name = file_name.split(".")[0]
-        label_name = label_name.replace("-", " ")
-        label_names.append(label_name)
+    :param strokes_dir: _description_
+    :return: _description_
+    """
+    all_drawings_strokes = []
+    index_to_drawing_stroke_indices = []
+    for file_name in os.listdir(strokes_dir):
+        file_path = os.path.join(strokes_dir, file_name)
+        drawings = load_drawings(file_path)
 
-    return label_names
+        drawings_strokes = [
+            drawing_to_strokes(drawing)
+            for drawing in drawings
+        ]
 
+        num_prev_drawings = len(all_drawings_strokes)
+        index_to_drawing_stroke_indices.extend([
+            (num_prev_drawings + drawing_index, stroke_index)
+            for drawing_index in range(len(drawings_strokes))
+            for stroke_index in range(len(drawings_strokes[drawing_index]))
+        ])
+        all_drawings_strokes.extend(drawings_strokes)
 
-def load_data(root_dir: str, image_shape: Tuple[int, int], class_names: List[str] = None):
-    print("loading data...")
-    class_names = class_names if class_names is not None else sorted(os.listdir(root_dir))
-    num_classes = len(class_names)
-    class_images = [None for _ in range(num_classes)]
-
-    def load_class(class_index, class_name, progress):
-        file_name = f"{class_name}.npy" if "npy" not in class_name else class_name
-        file_path = os.path.join(root_dir, file_name)
-
-        images_raw = numpy.load(file_path)
-        images = []
-        for raw_image in images_raw:
-            raw_image = raw_image.reshape(*image_shape)
-            image = PIL.Image.fromarray(raw_image)
-            images.append(image)
-            del raw_image
-
-        class_images[class_index] = images
-        progress.update(1)
-
-    with tqdm.tqdm(total=num_classes) as progress:
-        with ThreadPoolExecutor(max_workers=None) as executor:
-            futures = [
-                executor.submit(load_class, class_index, class_name, progress)
-                for class_index, class_name in enumerate(class_names)
-                if class_names is None or class_name in class_names
-            ]
-            [future.result() for future in futures]
-
-    all_images = sum(class_images, [])
-
-    print(f"loaded {len(all_images)} images")
-
-    return all_images
+    return all_drawings_strokes, index_to_drawing_stroke_indices
 
 
-def to_one_hot(array, num_classes):
-    array = numpy.array(array)
-    one_hot = numpy.squeeze(numpy.eye(num_classes)[array.reshape(-1)])
-    return numpy.array(one_hot, dtype=numpy.float32)
+def split_drawings_strokes(
+    index_lookup: List[Tuple[int, int]],
+    test_size: float,
+    shuffle: bool = True
+) -> Tuple[List[Tuple[int, int]], List[Tuple[int, int]]]:
+    indices = list(range(len(index_lookup)))
+    if shuffle:
+        random.shuffle(indices)
+
+    split_index = int(test_size * len(index_lookup))
+    test_indices = indices[:split_index]
+    train_indices = indices[split_index:]
+
+    test_index_lookup = [index_lookup[index] for index in test_indices]
+    train_index_lookup = [index_lookup[index] for index in train_indices]
+
+    return train_index_lookup, test_index_lookup
+
+
+def load_drawings(file_path: str) -> List[List[float]]:
+    drawings = []
+    with open(file_path, "r") as file:
+        for line in file:
+            data = json.loads(line)
+            data["recognized"]
+
+            drawings.append(data["drawing"])
+
+    return drawings
+
+
+def drawing_to_strokes(drawing: List[List[int]]):
+    return [
+        [
+            (x, y, 0.0)
+            for x, y in zip(*stroke)
+        ] + [
+            (0.0, 0.0, 1.0)
+        ]
+        for stroke in drawing
+    ]
