@@ -30,6 +30,7 @@ def load_drawings_strokes(
             drawing_to_strokes(drawing)
             for drawing in drawings
         ]
+        del drawings
 
         num_prev_drawings = len(all_drawings_strokes)
         index_to_drawing_stroke_indices.extend([
