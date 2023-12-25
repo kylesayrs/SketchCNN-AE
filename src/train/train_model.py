@@ -1,5 +1,7 @@
+import os
 import torch
 import wandb
+import pickle
 
 from src.train.config import TrainingConfig
 from src.model import AutoEncoder
@@ -20,7 +22,22 @@ def train_model(config: TrainingConfig):
     print(config)
 
     # load data
-    drawings_strokes, index_lookup = load_drawings_strokes(config.data_dir)
+    if os.path.exists("drawings_strokes.pkl") and os.path.exists("index_lookup.pkl"):
+        with open("drawings_strokes.pkl", "rb") as file:
+            drawings_strokes = pickle.load(file)
+
+        with open("index_lookup.pkl", "rb") as file:
+            index_lookup = pickle.load(file)
+    else:
+        drawings_strokes, index_lookup = load_drawings_strokes(config.data_dir)
+
+        with open("drawings_strokes.pkl", "wb") as file:
+            pickle.dump(drawings_strokes, file)
+
+        with open("index_lookup.pkl", "wb") as file:
+            pickle.dump(index_lookup, file)
+
+    exit(0)
 
     # split data
     train_index_lookup, test_index_lookup = split_drawings_strokes(

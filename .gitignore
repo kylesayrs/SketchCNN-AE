@@ -5,3 +5,5 @@ wandb/
 samples/
 drawings/
 checkpoints/
+drawings_strokes.pkl
+index_lookup.pkl
