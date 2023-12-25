@@ -1,3 +1,4 @@
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -17,7 +18,8 @@ class TrainingConfig(BaseModel):
     logging_rate: int = Field(default=10)
     test_batch_size: int = Field(default=128)
     save_checkpoints: bool = Field(default=True)
-    device: str = Field(default="cpu")
     wandb_mode: str = Field(default="online")
-
     save_samples: bool = Field(default=False)
+
+    device: str = Field(default="cpu")
+    device_ids: Optional[List[int]] = Field(default=None)

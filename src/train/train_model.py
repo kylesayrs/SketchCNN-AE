@@ -42,9 +42,15 @@ def train_model(config: TrainingConfig):
     )
 
     # create model, optimizer, and loss
-    model = AutoEncoder(config.image_size, config.latent_size).to(config.device)
+    model = AutoEncoder(config.image_size, config.latent_size)
     optimizer = create_optimizer(model, config.optimizer, lr=config.lr)
-    criterion = torch.nn.MSELoss().to(config.device)
+    criterion = torch.nn.MSELoss()
+
+    # data parallel and device loading
+    if config.device_ids is not None:
+        model = torch.nn.DataParallel(model, device_ids=config.device_ids)
+    model = model.to(config.device)
+    criterion = criterion.to(config.device)
 
     # train model
     for epoch_index in range(config.num_epochs):
