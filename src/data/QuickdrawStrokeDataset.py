@@ -1,11 +1,8 @@
 from typing import Tuple, List
 
-import os
-import json
 import torch
 import numpy
 import cairo
-from torchvision import transforms
 
 from competitive_drawing.train.utils.RandomResizePad import RandomResizePad
 
