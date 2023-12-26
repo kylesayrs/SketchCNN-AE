@@ -3,6 +3,7 @@ from typing import Optional, List, Tuple
 import os
 import json
 import tqdm
+import numpy
 import random
 from concurrent.futures import ThreadPoolExecutor
 
@@ -86,7 +87,7 @@ def load_drawings(file_path: str) -> List[List[float]]:
 
 
 def drawing_to_strokes(drawing: List[List[int]]):
-    return [
+    return numpy.array([
         [
             [x, y, 0.0]
             for x, y in zip(*stroke)
@@ -94,4 +95,4 @@ def drawing_to_strokes(drawing: List[List[int]]):
             [0.0, 0.0, 1.0]
         ]
         for stroke in drawing
-    ]
+    ])
