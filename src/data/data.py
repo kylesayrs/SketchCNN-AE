@@ -3,7 +3,6 @@ from typing import Optional, List, Tuple
 import os
 import json
 import tqdm
-import numpy
 import random
 from concurrent.futures import ThreadPoolExecutor
 
@@ -23,7 +22,12 @@ def load_drawings_strokes(
     """
     all_drawings_strokes = []
     index_to_drawing_stroke_indices = []
-    def load_file_drawings(file_name: str, progress: Optional[tqdm.tqdm] = None):
+    def load_file_drawings(
+        file_name: str,
+        ds,
+        idsi,
+        progress: Optional[tqdm.tqdm] = None
+    ):
         file_path = os.path.join(strokes_dir, file_name)
         drawings = load_drawings(file_path)
 
@@ -39,9 +43,9 @@ def load_drawings_strokes(
             for drawing_index in range(len(drawings_strokes))
             for stroke_index in range(len(drawings_strokes[drawing_index]))
         ]
-        index_to_drawing_stroke_indices.extend(indices)
+        idsi.extend(indices)
         del indices
-        all_drawings_strokes.extend(drawings_strokes)
+        ds.extend(drawings_strokes)
         del drawings_strokes
 
         if progress is not None:
@@ -51,7 +55,7 @@ def load_drawings_strokes(
         file_names = os.listdir(strokes_dir)
         progress = tqdm.tqdm(desc="Classes loaded", total=len(file_names))
         for file_name in file_names:
-            executor.submit(load_file_drawings, file_name, progress)
+            executor.submit(load_file_drawings, file_name, all_drawings_strokes, index_to_drawing_stroke_indices, progress)
 
     return all_drawings_strokes, index_to_drawing_stroke_indices
 
@@ -87,7 +91,7 @@ def load_drawings(file_path: str) -> List[List[float]]:
 
 
 def drawing_to_strokes(drawing: List[List[int]]):
-    return numpy.array([
+    return [
         [
             [x, y, 0.0]
             for x, y in zip(*stroke)
@@ -95,4 +99,4 @@ def drawing_to_strokes(drawing: List[List[int]]):
             [0.0, 0.0, 1.0]
         ]
         for stroke in drawing
-    ])
+    ]
