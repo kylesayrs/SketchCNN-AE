@@ -10,8 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 def load_drawings_strokes(
     strokes_dir: str
 ) -> Tuple[
-        List[List[Tuple[float, float, float]]],
-        List[Tuple[int, int]]
+        List[List[List[float]]],
+        List[List[int]]
     ]:
     """
     drawings_strokes[drawing_index][stroke_index] = (x, y, pen_down)
@@ -34,7 +34,7 @@ def load_drawings_strokes(
 
         num_prev_drawings = len(all_drawings_strokes)
         index_to_drawing_stroke_indices.extend([
-            (num_prev_drawings + drawing_index, stroke_index)
+            [num_prev_drawings + drawing_index, stroke_index]
             for drawing_index in range(len(drawings_strokes))
             for stroke_index in range(len(drawings_strokes[drawing_index]))
         ])
@@ -85,10 +85,10 @@ def load_drawings(file_path: str) -> List[List[float]]:
 def drawing_to_strokes(drawing: List[List[int]]):
     return [
         [
-            (x, y, 0.0)
+            [x, y, 0.0]
             for x, y in zip(*stroke)
         ] + [
-            (0.0, 0.0, 1.0)
+            [0.0, 0.0, 1.0]
         ]
         for stroke in drawing
     ]
