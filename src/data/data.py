@@ -33,12 +33,15 @@ def load_drawings_strokes(
         del drawings
 
         num_prev_drawings = len(all_drawings_strokes)
-        index_to_drawing_stroke_indices.extend([
+        indices = [
             [num_prev_drawings + drawing_index, stroke_index]
             for drawing_index in range(len(drawings_strokes))
             for stroke_index in range(len(drawings_strokes[drawing_index]))
-        ])
+        ]
+        index_to_drawing_stroke_indices.extend(indices)
+        del indices
         all_drawings_strokes.extend(drawings_strokes)
+        del drawings_strokes
 
         if progress is not None:
             progress.update(1)
