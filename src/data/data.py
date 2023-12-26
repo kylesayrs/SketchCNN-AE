@@ -6,6 +6,14 @@ import tqdm
 import random
 from concurrent.futures import ThreadPoolExecutor
 
+def delete_lists(list1):
+    if list1 is None:
+        return
+    for item in list1:
+        if isinstance(item, list):
+            delete_lists(item)
+    del list1
+
 
 def load_drawings_strokes(
     strokes_dir: str
@@ -44,9 +52,9 @@ def load_drawings_strokes(
             for stroke_index in range(len(drawings_strokes[drawing_index]))
         ]
         idsi.extend(indices)
-        del indices
+        delete_lists(indices)
         ds.extend(drawings_strokes)
-        del drawings_strokes
+        delete_lists(drawings_strokes)
 
         if progress is not None:
             progress.update(1)
