@@ -10,6 +10,7 @@ from src.train import create_optimizer, batch_callback
 
 
 def train_model(config: TrainingConfig):
+    """
     run = wandb.init(
         project="SketchCNN-AE",
         entity="kylesayrs",
@@ -20,7 +21,9 @@ def train_model(config: TrainingConfig):
     )
     print(f"Run id: {wandb.run.id}")
     print(config)
+    """
 
+    print("loading data")
     # load data
     if os.path.exists("drawings_strokes.pkl") and os.path.exists("index_lookup.pkl"):
         with open("drawings_strokes.pkl", "rb") as file:

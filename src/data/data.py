@@ -1,18 +1,50 @@
 from typing import Optional, List, Tuple
 
 import os
+import gc
+import sys
 import json
 import tqdm
+import time
+import copy
 import random
-from concurrent.futures import ThreadPoolExecutor
+import tracemalloc
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-def delete_lists(list1):
-    if list1 is None:
-        return
-    for item in list1:
-        if isinstance(item, list):
-            delete_lists(item)
-    del list1
+
+def load_file_drawings(
+    strokes_dir: str,
+    file_name: str,
+    index_lookup,
+    all_drawings_strokes,
+    progress: Optional[tqdm.tqdm] = None
+): 
+    print(f"starting {file_name}")
+    file_path = os.path.join(strokes_dir, file_name)
+    drawings = load_drawings(file_path)
+
+    drawings_strokes = [
+        drawing_to_strokes(drawing)
+        for drawing in drawings
+    ]
+
+    num_prev_drawings = len(all_drawings_strokes)
+    indices = [
+        [num_prev_drawings + drawing_index, stroke_index]
+        for drawing_index in range(len(drawings_strokes))
+        for stroke_index in range(len(drawings_strokes[drawing_index]))
+    ]
+
+    index_lookup.extend(indices)
+    all_drawings_strokes.extend(drawings)
+
+    print(f"finished {file_name}")
+    print(f"index_lookup: {sys.getsizeof(index_lookup)}")
+    print(f"all_drawings_strokes: {sys.getsizeof(all_drawings_strokes)}")
+    print(f"traced_memory: {tracemalloc.get_traced_memory()}")
+
+    if progress is not None:
+        progress.update(1)
 
 
 def load_drawings_strokes(
@@ -28,44 +60,19 @@ def load_drawings_strokes(
     :param strokes_dir: _description_
     :return: _description_
     """
+    tracemalloc.start()
     all_drawings_strokes = []
-    index_to_drawing_stroke_indices = []
-    def load_file_drawings(
-        file_name: str,
-        ds,
-        idsi,
-        progress: Optional[tqdm.tqdm] = None
-    ):
-        file_path = os.path.join(strokes_dir, file_name)
-        drawings = load_drawings(file_path)
+    index_lookup = []
 
-        drawings_strokes = [
-            drawing_to_strokes(drawing)
-            for drawing in drawings
-        ]
-        del drawings
-
-        num_prev_drawings = len(all_drawings_strokes)
-        indices = [
-            [num_prev_drawings + drawing_index, stroke_index]
-            for drawing_index in range(len(drawings_strokes))
-            for stroke_index in range(len(drawings_strokes[drawing_index]))
-        ]
-        idsi.extend(indices)
-        delete_lists(indices)
-        ds.extend(drawings_strokes)
-        delete_lists(drawings_strokes)
-
-        if progress is not None:
-            progress.update(1)
-
-    with ThreadPoolExecutor(max_workers=None) as executor:
+    #with ThreadPoolExecutor(max_workers=3) as executor:
+    if True:
         file_names = os.listdir(strokes_dir)
         progress = tqdm.tqdm(desc="Classes loaded", total=len(file_names))
         for file_name in file_names:
-            executor.submit(load_file_drawings, file_name, all_drawings_strokes, index_to_drawing_stroke_indices, progress)
+            #executor.submit(load_file_drawings, strokes_dir, file_name, index_lookup, all_drawings_strokes, progress)
+            load_file_drawings(strokes_dir, file_name, index_lookup, all_drawings_strokes)#, progress)
 
-    return all_drawings_strokes, index_to_drawing_stroke_indices
+    return all_drawings_strokes, index_lookup
 
 
 def split_drawings_strokes(
@@ -89,8 +96,10 @@ def split_drawings_strokes(
 
 def load_drawings(file_path: str) -> List[List[float]]:
     drawings = []
+
     with open(file_path, "r") as file:
-        for line in file:
+        lines = file.readlines()  # reading lines eagerly doesn't take that long
+        for line in lines:
             data = json.loads(line)
             if data["recognized"]:
                 drawings.append(data["drawing"])
@@ -98,8 +107,17 @@ def load_drawings(file_path: str) -> List[List[float]]:
     return drawings
 
 
-def drawing_to_strokes(drawing: List[List[int]]):
-    return [
+def drawing_to_strokes(drawing: List[List[int]], drawings = None):
+    """
+    for stroke in drawing:
+        yield [
+            [x, y, 0.0]
+            for x, y in zip(*stroke)
+        ] + [
+            [0.0, 0.0, 1.0]
+        ]
+    """
+    strokes = [
         [
             [x, y, 0.0]
             for x, y in zip(*stroke)
@@ -108,3 +126,8 @@ def drawing_to_strokes(drawing: List[List[int]]):
         ]
         for stroke in drawing
     ]
+
+    if drawings is not None:
+        drawings.append(strokes)
+    else:
+        return strokes
