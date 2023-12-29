@@ -15,7 +15,7 @@ class TrainingConfig(BaseModel):
     optimizer: str = Field(default="adam")
     momentum: float = Field(default=0.95)
 
-    logging_rate: int = Field(default=10)
+    logging_rate: int = Field(default=100)
     test_batch_size: int = Field(default=128)
     wandb_mode: str = Field(default="online")
     save_samples: bool = Field(default=False)

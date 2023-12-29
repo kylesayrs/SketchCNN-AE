@@ -19,8 +19,8 @@ def load_file_drawings(
     num_prev_drawings = len(all_drawings_strokes)
     indices = [
         [num_prev_drawings + drawing_index, stroke_index]
-        for drawing_index in range(len(drawings_strokes))
-        for stroke_index in range(len(drawings_strokes[drawing_index]))
+        for drawing_index in range(len(drawings))
+        for stroke_index in range(len(drawings[drawing_index]))
     ]
 
     index_lookup.extend(indices)
@@ -83,19 +83,6 @@ def load_drawings(file_path: str, sparsity: int = 1) -> List[List[int]]:
         for line in lines[::sparsity]:
             data = json.loads(line)
             if data["recognized"]:
-                drawing = reformat_strokes(data["drawing"])
-                drawings.append(drawing)
+                drawings.append(data["drawing"])
 
     return drawings
-
-
-def reformat_strokes(drawing: List[List[int]]) -> List[List[int]]:
-    return [
-        [
-            [x, y, 0]
-            for x, y in zip(*stroke)
-        ] + [
-            [0, 0, 1]
-        ]
-        for stroke in drawing
-    ]

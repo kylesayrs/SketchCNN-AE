@@ -6,7 +6,7 @@ import cairo
 
 
 def strokes_to_raster(
-    strokes: List[Tuple[float, float, float]],
+    strokes: List[List[List[int]]],
     side: int = 50,
     line_diameter: int = 16,
     padding: int = 16
@@ -43,11 +43,10 @@ def strokes_to_raster(
     # draw strokes, this is the most cpu-intensive part
     ctx.set_source_rgb(1.0, 1.0, 1.0)
     for stroke in strokes:
-        ctx.move_to(stroke[0][0], stroke[0][1])
-        # skip first because of previous line
-        # skip last because of stroke end data
-        for i in range(1, len(stroke) - 1):
-            ctx.line_to(stroke[i][0], stroke[i][1])
+        ctx.move_to(stroke[0][0], stroke[1][0])
+        # skip first because we've already moved to it
+        for i in range(1, len(stroke[0])):
+            ctx.line_to(stroke[0][i], stroke[1][i])
         ctx.stroke()
 
     data = surface.get_data()
