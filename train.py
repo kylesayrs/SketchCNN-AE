@@ -1,16 +1,12 @@
-import os
-import shutil
 from src.train import TrainingConfig, train_model
 
 
 if __name__ == "__main__":
-    print("Starting")
     config = TrainingConfig(
         wandb_mode="disabled",
         save_checkpoints=True,
-        device="cuda",
+        device="cpu",
         save_samples=True,
         latent_size=256,
     )
-    print("Created config")
     train_model(config)
