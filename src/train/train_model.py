@@ -48,13 +48,17 @@ def train_model(config: TrainingConfig):
         QuickdrawStrokeDataset(drawings_strokes, train_index_lookup, image_size=config.image_size),
         batch_size=config.batch_size,
         shuffle=True,
-        num_workers=0
+        num_workers=6,
+        pin_memory=True,
+        pin_memory_device=config.device
     )
     test_loader = torch.utils.data.DataLoader(
         QuickdrawStrokeDataset(drawings_strokes, test_index_lookup, image_size=config.image_size),
         batch_size=config.test_batch_size,
         shuffle=True,
-        num_workers=0
+        num_workers=0,
+        pin_memory=True,
+        pin_memory_device=config.device
     )
 
     # create model, optimizer, and loss
