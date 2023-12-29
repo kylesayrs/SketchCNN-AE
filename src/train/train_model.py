@@ -48,7 +48,7 @@ def train_model(config: TrainingConfig):
         QuickdrawStrokeDataset(drawings_strokes, train_index_lookup, image_size=config.image_size),
         batch_size=config.batch_size,
         shuffle=True,
-        num_workers=6,
+        num_workers=2,
         pin_memory=True,
         pin_memory_device=config.device
     )

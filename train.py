@@ -3,9 +3,9 @@ from src.train import TrainingConfig, train_model
 
 if __name__ == "__main__":
     config = TrainingConfig(
-        wandb_mode="disabled",
+        wandb_mode="online",
         save_checkpoints=True,
-        device="cpu",
+        device="cuda",
         save_samples=True,
         latent_size=256,
     )

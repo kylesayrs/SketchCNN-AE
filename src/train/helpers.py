@@ -115,7 +115,9 @@ def test_model(
     test_images = test_images.to(config.device)
 
     with torch.no_grad():
+        model.eval()
         test_reconstructions, _latents = model(test_images)
         test_loss = criterion(test_images, test_reconstructions)
+        model.train()
 
     return test_loss.item()
