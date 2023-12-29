@@ -19,9 +19,8 @@ def load_file_drawings(
     all_drawings_strokes,
     progress: Optional[tqdm.tqdm] = None
 ): 
-    print(f"starting {file_name}")
     file_path = os.path.join(strokes_dir, file_name)
-    drawings = load_drawings(file_path)
+    drawings = load_drawings(file_path, sparsity=20)
 
     drawings_strokes = [
         drawing_to_strokes(drawing)
@@ -38,11 +37,6 @@ def load_file_drawings(
     index_lookup.extend(indices)
     all_drawings_strokes.extend(drawings)
 
-    print(f"finished {file_name}")
-    print(f"index_lookup: {sys.getsizeof(index_lookup)}")
-    print(f"all_drawings_strokes: {sys.getsizeof(all_drawings_strokes)}")
-    print(f"traced_memory: {tracemalloc.get_traced_memory()}")
-
     if progress is not None:
         progress.update(1)
 
@@ -57,6 +51,8 @@ def load_drawings_strokes(
     drawings_strokes[drawing_index][stroke_index] = (x, y, pen_down)
     index_to_drawing_stroke_indices[index] = (drawing_index, stroke_index)
 
+    Future work could multiprocess this function
+
     :param strokes_dir: _description_
     :return: _description_
     """
@@ -64,13 +60,10 @@ def load_drawings_strokes(
     all_drawings_strokes = []
     index_lookup = []
 
-    #with ThreadPoolExecutor(max_workers=3) as executor:
-    if True:
-        file_names = os.listdir(strokes_dir)
-        progress = tqdm.tqdm(desc="Classes loaded", total=len(file_names))
-        for file_name in file_names:
-            #executor.submit(load_file_drawings, strokes_dir, file_name, index_lookup, all_drawings_strokes, progress)
-            load_file_drawings(strokes_dir, file_name, index_lookup, all_drawings_strokes)#, progress)
+    file_names = os.listdir(strokes_dir)
+    progress = tqdm.tqdm(desc="Classes loaded", total=len(file_names))
+    for file_index, file_name in enumerate(file_names):
+        load_file_drawings(strokes_dir, file_name, index_lookup, all_drawings_strokes, progress)
 
     return all_drawings_strokes, index_lookup
 
@@ -94,12 +87,12 @@ def split_drawings_strokes(
     return train_index_lookup, test_index_lookup
 
 
-def load_drawings(file_path: str) -> List[List[float]]:
+def load_drawings(file_path: str, sparsity: int = 1) -> List[List[float]]:
     drawings = []
 
     with open(file_path, "r") as file:
-        lines = file.readlines()  # reading lines eagerly doesn't take that long
-        for line in lines:
+        lines = file.readlines()
+        for line in lines[::sparsity]:
             data = json.loads(line)
             if data["recognized"]:
                 drawings.append(data["drawing"])
@@ -108,16 +101,7 @@ def load_drawings(file_path: str) -> List[List[float]]:
 
 
 def drawing_to_strokes(drawing: List[List[int]], drawings = None):
-    """
-    for stroke in drawing:
-        yield [
-            [x, y, 0.0]
-            for x, y in zip(*stroke)
-        ] + [
-            [0.0, 0.0, 1.0]
-        ]
-    """
-    strokes = [
+    return [
         [
             [x, y, 0.0]
             for x, y in zip(*stroke)
@@ -126,8 +110,3 @@ def drawing_to_strokes(drawing: List[List[int]], drawings = None):
         ]
         for stroke in drawing
     ]
-
-    if drawings is not None:
-        drawings.append(strokes)
-    else:
-        return strokes
