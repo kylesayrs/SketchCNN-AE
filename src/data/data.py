@@ -1,15 +1,9 @@
 from typing import Optional, List, Tuple
 
 import os
-import gc
-import sys
 import json
 import tqdm
-import time
-import copy
 import random
-import tracemalloc
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 def load_file_drawings(
@@ -21,11 +15,6 @@ def load_file_drawings(
 ): 
     file_path = os.path.join(strokes_dir, file_name)
     drawings = load_drawings(file_path, sparsity=20)
-
-    drawings_strokes = [
-        drawing_to_strokes(drawing)
-        for drawing in drawings
-    ]
 
     num_prev_drawings = len(all_drawings_strokes)
     indices = [
@@ -48,15 +37,14 @@ def load_drawings_strokes(
         List[List[int]]
     ]:
     """
-    drawings_strokes[drawing_index][stroke_index] = (x, y, pen_down)
-    index_to_drawing_stroke_indices[index] = (drawing_index, stroke_index)
+    all_drawings_strokes[drawing_index][stroke_index] = (x, y, pen_down)
+    index_lookup[index] = (drawing_index, stroke_index)
 
     Future work could multiprocess this function
 
-    :param strokes_dir: _description_
-    :return: _description_
+    :param strokes_dir: TODO
+    :return: TODO
     """
-    tracemalloc.start()
     all_drawings_strokes = []
     index_lookup = []
 
@@ -87,7 +75,7 @@ def split_drawings_strokes(
     return train_index_lookup, test_index_lookup
 
 
-def load_drawings(file_path: str, sparsity: int = 1) -> List[List[float]]:
+def load_drawings(file_path: str, sparsity: int = 1) -> List[List[int]]:
     drawings = []
 
     with open(file_path, "r") as file:
@@ -95,18 +83,19 @@ def load_drawings(file_path: str, sparsity: int = 1) -> List[List[float]]:
         for line in lines[::sparsity]:
             data = json.loads(line)
             if data["recognized"]:
-                drawings.append(data["drawing"])
+                drawing = reformat_strokes(data["drawing"])
+                drawings.append(drawing)
 
     return drawings
 
 
-def drawing_to_strokes(drawing: List[List[int]], drawings = None):
+def reformat_strokes(drawing: List[List[int]]) -> List[List[int]]:
     return [
         [
-            [x, y, 0.0]
+            [x, y, 0]
             for x, y in zip(*stroke)
         ] + [
-            [0.0, 0.0, 1.0]
+            [0, 0, 1]
         ]
         for stroke in drawing
     ]
