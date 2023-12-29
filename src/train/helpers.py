@@ -28,15 +28,16 @@ def batch_callback(
     epoch_index: int,
     batch_index: int
 ):
-    if (epoch_index * num_batches + batch_index) % config.logging_rate == 0:
+    total_num_batches = epoch_index * num_batches + batch_index
+    if total_num_batches % config.logging_rate == 0:
         test_loss = test_model(config, model, test_loader, criterion)
         log_metrics(config, epoch_index, batch_index, num_batches, train_loss, test_loss)
 
         if config.save_samples:
             save_sample(config, epoch_index, batch_index, model, test_loader)
 
-        if config.save_checkpoints:
-            save_checkpoint(model, epoch_index, batch_index)
+    if config.save_checkpoints and total_num_batches % config.save_checkpoints_rate == 0:
+        save_checkpoint(model, epoch_index, batch_index)
 
 
 def save_checkpoint(

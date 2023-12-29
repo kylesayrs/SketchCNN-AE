@@ -17,9 +17,11 @@ class TrainingConfig(BaseModel):
 
     logging_rate: int = Field(default=10)
     test_batch_size: int = Field(default=128)
-    save_checkpoints: bool = Field(default=True)
     wandb_mode: str = Field(default="online")
     save_samples: bool = Field(default=False)
+
+    save_checkpoints: bool = Field(default=True)
+    save_checkpoints_rate: int = Field(default=1_500)
 
     device: str = Field(default="cpu")
     device_ids: Optional[List[int]] = Field(default=None)
