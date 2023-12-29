@@ -60,40 +60,42 @@ def strokes_to_raster(
 
 
 class QuickdrawStrokeDataset(torch.utils.data.Dataset):
+    """
+    Dataset of partial drawings generated from strokes. Partial drawings are
+    generated during iteration to accomodate memory constraints with the tradeoff
+    of a slightly increased performance cost.
+
+    While the SketchCNN-AE is trained on only images, a dataset like this one can
+    be used to train a sketchRNN. 
+    """
     def __init__(
         self,
         drawings_strokes: List[List[Tuple[float, float, float]]],
         index_to_drawing_stroke_indices: List[Tuple[int, int]] = 50,
-        image_size: int = 50
+        image_size: int = 50,
+        include_next_stroke: bool = True
     ):
         self.drawings_strokes = drawings_strokes
         self.index_to_drawing_stroke_indices = index_to_drawing_stroke_indices
         self.image_size = image_size
+        self.include_next_stroke= include_next_stroke
 
 
     def __len__(self):
         return len(self.index_to_drawing_stroke_indices)
 
 
-    """ TODO: save for when we train the RNN
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
         drawing_index, stroke_index = self.index_to_drawing_stroke_indices[index]
     
         image_strokes = self.drawings_strokes[drawing_index][:stroke_index]
         image = strokes_to_raster(image_strokes, side=self.image_size)
+
+        if not self.include_next_stroke:
+            return torch.tensor(image)
+
         next_stroke = self.drawings_strokes[drawing_index][stroke_index]
-
         return torch.tensor(image), torch.tensor(next_stroke)
-    """
-
-
-    def __getitem__(self, index: int) -> torch.Tensor:
-        drawing_index, stroke_index = self.index_to_drawing_stroke_indices[index]
-    
-        image_strokes = self.drawings_strokes[drawing_index][:stroke_index]
-        image = strokes_to_raster(image_strokes, side=self.image_size)
-
-        return torch.tensor(image, dtype=torch.float32)
     
 
 if __name__ == "__main__":
