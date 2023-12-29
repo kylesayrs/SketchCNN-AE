@@ -50,7 +50,7 @@ def load_drawings_strokes(
 
     file_names = os.listdir(strokes_dir)
     progress = tqdm.tqdm(desc="Classes loaded", total=len(file_names))
-    for file_index, file_name in enumerate(file_names):
+    for _file_index, file_name in enumerate(file_names):
         load_file_drawings(strokes_dir, file_name, index_lookup, all_drawings_strokes, progress)
 
     return all_drawings_strokes, index_lookup
