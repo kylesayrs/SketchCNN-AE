@@ -64,7 +64,9 @@ def save_sample(
     image = image.to(config.device)
 
     with torch.no_grad():
+        model.eval()
         reconstruction, _latent = model(image)
+        model.train()
 
     image = image.cpu().numpy().squeeze(0).squeeze(0)
     reconstruction = reconstruction.cpu().numpy().squeeze(0).squeeze(0)
