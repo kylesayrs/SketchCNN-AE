@@ -73,7 +73,7 @@ class QuickdrawStrokeDataset(torch.utils.data.Dataset):
         drawings_strokes: List[List[Tuple[float, float, float]]],
         index_to_drawing_stroke_indices: List[Tuple[int, int]] = 50,
         image_size: int = 50,
-        include_next_stroke: bool = True
+        include_next_stroke: bool = False
     ):
         self.drawings_strokes = drawings_strokes
         self.index_to_drawing_stroke_indices = index_to_drawing_stroke_indices

@@ -9,7 +9,8 @@ if __name__ == "__main__":
         wandb_mode="disabled",
         save_checkpoints=True,
         device="cuda",
-        save_samples=True
+        save_samples=True,
+        latent_size=256,
     )
     print("Created config")
     train_model(config)

@@ -10,7 +10,6 @@ from src.train import create_optimizer, batch_callback
 
 
 def train_model(config: TrainingConfig):
-    """
     run = wandb.init(
         project="SketchCNN-AE",
         entity="kylesayrs",
@@ -21,7 +20,6 @@ def train_model(config: TrainingConfig):
     )
     print(f"Run id: {wandb.run.id}")
     print(config)
-    """
 
     print("loading data")
     # load data
@@ -39,8 +37,6 @@ def train_model(config: TrainingConfig):
 
         with open("index_lookup.pkl", "wb") as file:
             pickle.dump(index_lookup, file)
-
-    exit(0)
 
     # split data
     train_index_lookup, test_index_lookup = split_drawings_strokes(
